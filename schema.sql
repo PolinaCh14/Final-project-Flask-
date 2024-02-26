@@ -1,0 +1,22 @@
+DROP TABLE IF EXISTS posts;
+DROP TABLE IF EXISTS type;
+
+CREATE TABLE type(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type TEXT NOT NULL
+);
+
+
+CREATE TABLE posts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type_id INT NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    photo TEXT NULL, 
+    photo_name TEXT NULL,
+    FOREIGN KEY (type_id) 
+        REFERENCES type (id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+);

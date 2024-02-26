@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{% block title %} Edit "{{ post['title'] }}" {% endblock %}</h1>
+
+<form method="post">
+    <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" name="title" placeholder="Post title"
+            class="form-control"
+            value="{{ request.form['title'] or post['title'] }}">
+        </input>
+    </div>
+
+    <div class="form-group">
+        <label for="content">Content</label>
+        <textarea name="content" placeholder="Post content"
+                class="form-control">{{ request.form['content'] or post['content'] }}</textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="photo">Photo</label>
+        <textarea name="photo" placeholder="Post photo"
+                class="form-control">{{ request.form['photo'] or post['photo'] }}</textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="photo_name">Photo name</label>
+        <textarea name="photo_name" placeholder="Post photo name"
+                class="form-control">{{ request.form['photo_name'] or post['photo_name'] }}</textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="type_id">Post type</label>
+        {% if post_type == 1 %}
+        <select class="form-control" id="type_id" name = "type_id">
+            <option value = "1">Main post</option>
+            <option value = "2">Post</option>
+            <option value = "3">Friend</option>
+        </select>
+        {% elif post_type == 2 %}
+        <select class="form-control" id="type_id" name = "type_id">
+            <option value = "2">Post</option>
+            <option value = "1">Main post</option>
+            <option value = "3">Friend</option>
+        </select>
+        {% else %}
+        <select class="form-control" id="type_id" name = "type_id">
+            <option value = "3">Friend</option>
+            <option value = "1">Main post</option>
+            <option value = "2">Post</option>
+        </select>
+        {% endif %}
+
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</form>
+<hr>
+
+<form action="{{ url_for('delete', id=post['id']) }}" method="POST">
+    <input type="submit" value="Delete Post"
+            class="btn btn-danger btn-sm"
+            onclick="return confirm('Are you sure you want to delete this post?')">
+</form>
+
+{% endblock %}

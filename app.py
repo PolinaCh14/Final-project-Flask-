@@ -1,9 +1,9 @@
 import sqlite3
+import sys
 import os
+import traceback
 from flask import Flask, render_template, request, url_for, flash, redirect
 from werkzeug.exceptions import abort
-import traceback
-import sys
 
 
 def get_db_connection():
@@ -106,9 +106,17 @@ def about():
         main_post_id = conn.execute(
             "SELECT id FROM posts where type_id = 1"
         ).fetchone()[0]
+    except sqlite3.Error as er:
+        print("SQLite error: %s" % (" ".join(er.args)))
+        print("Exception class is: ", er.__class__)
+        print("SQLite traceback: ")
+        exc_type, exc_value, exc_tb = sys.exc_info()
+        print(traceback.format_exception(exc_type, exc_value, exc_tb))
+        abort(500)
     except Exception as e:
         print(e)
         abort(404)
+
     finally:
         conn.close()
     post = get_post(main_post_id)

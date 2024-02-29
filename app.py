@@ -1,15 +1,24 @@
 import sqlite3
-import sys
 import os
-import traceback
-from flask import Flask, render_template, request, url_for, flash, redirect
+import logging
+from flask import Flask
+from flask import render_template
+from flask import request
+from flask import url_for
+from flask import flash
+from flask import redirect
 from werkzeug.exceptions import abort
 
 
 def get_db_connection():
     file_db = "database.db"
     if not os.path.exists(file_db):
-        print("Can't find this db ", file_db)
+        logging.basicConfig(
+            filename="app.log",
+            filemode="w",
+            format="%(name)s - %(levelname)s - %(message)s",
+        )
+        logging.error("Exception Can't find this db %s", file_db)
         abort(500)
     conn = sqlite3.connect(file_db)
     conn.row_factory = sqlite3.Row
@@ -17,15 +26,17 @@ def get_db_connection():
 
 
 def get_post(post_id):
+    conn = None
     try:
         conn = get_db_connection()
         post = conn.execute("SELECT * FROM posts WHERE id = ? ", (post_id,)).fetchone()
-    except sqlite3.Error as er:
-        print("SQLite error: %s" % (" ".join(er.args)))
-        print("Exception class is: ", er.__class__)
-        print("SQLite traceback: ")
-        exc_type, exc_value, exc_tb = sys.exc_info()
-        print(traceback.format_exception(exc_type, exc_value, exc_tb))
+    except sqlite3.Error as e:
+        logging.basicConfig(
+            filename="app.log",
+            filemode="w",
+            format="%(name)s - %(levelname)s - %(message)s",
+        )
+        logging.error("SQlite Error: %s ", e, exc_info=True)
         abort(500)
     finally:
         conn.close()
@@ -36,36 +47,41 @@ def get_post(post_id):
 
 
 def get_all_posts(type_id):
+    conn = None
     try:
         conn = get_db_connection()
         posts = conn.execute(
             "SELECT * FROM posts where type_id = ?", (type_id,)
         ).fetchall()
 
-    except sqlite3.Error as er:
-        print("SQLite error: %s" % (" ".join(er.args)))
-        print("Exception class is: ", er.__class__)
-        print("SQLite traceback: ")
-        exc_type, exc_value, exc_tb = sys.exc_info()
-        print(traceback.format_exception(exc_type, exc_value, exc_tb))
+    except sqlite3.Error as e:
+        logging.basicConfig(
+            filename="app.log",
+            filemode="w",
+            format="%(name)s - %(levelname)s - %(message)s",
+        )
+        logging.error("SQlite Error: %s ", e, exc_info=True)
         abort(500)
     finally:
-        conn.close()
+        if conn:
+            conn.close()
     return posts
 
 
 def get_type_id(id):
+    conn = None
     try:
         conn = get_db_connection()
         post_type = conn.execute(
             "SELECT type_id FROM posts WHERE id = ? ", (id,)
         ).fetchone()[0]
-    except sqlite3.Error as er:
-        print("SQLite error: %s" % (" ".join(er.args)))
-        print("Exception class is: ", er.__class__)
-        print("SQLite traceback: ")
-        exc_type, exc_value, exc_tb = sys.exc_info()
-        print(traceback.format_exception(exc_type, exc_value, exc_tb))
+    except sqlite3.Error as e:
+        logging.basicConfig(
+            filename="app.log",
+            filemode="w",
+            format="%(name)s - %(levelname)s - %(message)s",
+        )
+        logging.error("SQlite Error: %s ", e, exc_info=True)
         abort(500)
     finally:
         conn.close()
@@ -101,20 +117,23 @@ def post(post_id):
 
 @app.route("/about")
 def about():
+    conn = None
     try:
         conn = get_db_connection()
         main_post_id = conn.execute(
             "SELECT id FROM posts where type_id = 1"
         ).fetchone()[0]
-    except sqlite3.Error as er:
-        print("SQLite error: %s" % (" ".join(er.args)))
-        print("Exception class is: ", er.__class__)
-        print("SQLite traceback: ")
-        exc_type, exc_value, exc_tb = sys.exc_info()
-        print(traceback.format_exception(exc_type, exc_value, exc_tb))
+    except sqlite3.Error as e:
+
+        logging.basicConfig(
+            filename="app.log",
+            filemode="w",
+            format="%(name)s - %(levelname)s - %(message)s",
+        )
+        logging.error("SQlite Error: %s ", e, exc_info=True)
         abort(500)
     except Exception as e:
-        print(e)
+        logging.error("Error: %s ", e, exc_info=True)
         abort(404)
 
     finally:
@@ -132,6 +151,7 @@ def friends():
 
 @app.route("/create", methods=("GET", "POST"))
 def create():
+    conn = None
     if request.method == "POST":
         title = request.form["title"]
         content = request.form["content"]
@@ -149,12 +169,13 @@ def create():
                     (title, content, photo, photo_name, type_id),
                 )
                 conn.commit()
-            except sqlite3.Error as er:
-                print("SQLite error: %s" % (" ".join(er.args)))
-                print("Exception class is: ", er.__class__)
-                print("SQLite traceback: ")
-                exc_type, exc_value, exc_tb = sys.exc_info()
-                print(traceback.format_exception(exc_type, exc_value, exc_tb))
+            except sqlite3.Error as e:
+                logging.basicConfig(
+                    filename="app.log",
+                    filemode="w",
+                    format="%(name)s - %(levelname)s - %(message)s",
+                )
+                logging.error("SQlite Error: %s ", e, exc_info=True)
                 abort(500)
             finally:
                 conn.close()
@@ -166,6 +187,7 @@ def create():
 
 @app.route("/<int:id>/edit", methods=("GET", "POST"))
 def edit(id):
+    conn = None
     post = get_post(id)
     post_type = get_type_id(id)
 
@@ -190,12 +212,13 @@ def edit(id):
                     (title, content, photo, photo_name, type_id, id),
                 )
                 conn.commit()
-            except sqlite3.Error as er:
-                print("SQLite error: %s" % (" ".join(er.args)))
-                print("Exception class is: ", er.__class__)
-                print("SQLite traceback: ")
-                exc_type, exc_value, exc_tb = sys.exc_info()
-                print(traceback.format_exception(exc_type, exc_value, exc_tb))
+            except sqlite3.Error as e:
+                logging.basicConfig(
+                    filename="app.log",
+                    filemode="w",
+                    format="%(name)s - %(levelname)s - %(message)s",
+                )
+                logging.error("SQlite Error: %s ", e, exc_info=True)
                 abort(500)
             finally:
                 conn.close()
@@ -212,18 +235,20 @@ def edit(id):
 
 @app.route("/<int:id>/delete", methods=("POST",))
 def delete(id):
+    conn = None
     post = get_post(id)
     try:
         conn = get_db_connection()
         conn.execute("DELETE FROM posts WHERE id = ?", (id,))
         conn.commit()
 
-    except sqlite3.Error as er:
-        print("SQLite error: %s" % (" ".join(er.args)))
-        print("Exception class is: ", er.__class__)
-        print("SQLite traceback: ")
-        exc_type, exc_value, exc_tb = sys.exc_info()
-        print(traceback.format_exception(exc_type, exc_value, exc_tb))
+    except sqlite3.Error as e:
+        logging.basicConfig(
+            filename="app.log",
+            filemode="w",
+            format="%(name)s - %(levelname)s - %(message)s",
+        )
+        logging.error("SQlite Error: %s ", e, exc_info=True)
         abort(500)
     finally:
         conn.close()

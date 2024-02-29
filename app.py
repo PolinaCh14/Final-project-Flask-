@@ -26,9 +26,8 @@ def get_db_connection():
 
 
 def get_post(post_id):
-    conn = None
+    conn = get_db_connection()
     try:
-        conn = get_db_connection()
         post = conn.execute("SELECT * FROM posts WHERE id = ? ", (post_id,)).fetchone()
     except sqlite3.Error as e:
         logging.basicConfig(
@@ -47,9 +46,8 @@ def get_post(post_id):
 
 
 def get_all_posts(type_id):
-    conn = None
+    conn = get_db_connection()
     try:
-        conn = get_db_connection()
         posts = conn.execute(
             "SELECT * FROM posts where type_id = ?", (type_id,)
         ).fetchall()
@@ -69,9 +67,8 @@ def get_all_posts(type_id):
 
 
 def get_type_id(id):
-    conn = None
+    conn = get_db_connection()
     try:
-        conn = get_db_connection()
         post_type = conn.execute(
             "SELECT type_id FROM posts WHERE id = ? ", (id,)
         ).fetchone()[0]
@@ -117,14 +114,12 @@ def post(post_id):
 
 @app.route("/about")
 def about():
-    conn = None
+    conn = get_db_connection()
     try:
-        conn = get_db_connection()
         main_post_id = conn.execute(
             "SELECT id FROM posts where type_id = 1"
         ).fetchone()[0]
     except sqlite3.Error as e:
-
         logging.basicConfig(
             filename="app.log",
             filemode="w",
@@ -135,7 +130,6 @@ def about():
     except Exception as e:
         logging.error("Error: %s ", e, exc_info=True)
         abort(404)
-
     finally:
         conn.close()
     post = get_post(main_post_id)
@@ -151,7 +145,7 @@ def friends():
 
 @app.route("/create", methods=("GET", "POST"))
 def create():
-    conn = None
+    conn = get_db_connection()
     if request.method == "POST":
         title = request.form["title"]
         content = request.form["content"]
@@ -163,7 +157,6 @@ def create():
             flash("Title is required!")
         else:
             try:
-                conn = get_db_connection()
                 conn.execute(
                     "INSERT INTO posts (title, content, photo, photo_name, type_id) VALUES (?, ?, ?, ?, ?)",
                     (title, content, photo, photo_name, type_id),
@@ -187,7 +180,7 @@ def create():
 
 @app.route("/<int:id>/edit", methods=("GET", "POST"))
 def edit(id):
-    conn = None
+    conn = get_db_connection()
     post = get_post(id)
     post_type = get_type_id(id)
 
@@ -202,7 +195,6 @@ def edit(id):
             flash("Title is required!")
         else:
             try:
-                conn = get_db_connection()
                 post_type = conn.execute(
                     "SELECT type_id FROM posts WHERE id = ? ", (id,)
                 ).fetchone()[0]
@@ -235,10 +227,9 @@ def edit(id):
 
 @app.route("/<int:id>/delete", methods=("POST",))
 def delete(id):
-    conn = None
+    conn = get_db_connection()
     post = get_post(id)
     try:
-        conn = get_db_connection()
         conn.execute("DELETE FROM posts WHERE id = ?", (id,))
         conn.commit()
 

@@ -1,19 +1,43 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script> -->
     {% for post in posts %}
-        <!-- <h2>{% block title %} {{ posts['title'] }} {% endblock %}</h2> -->
-        <h2>{{ post['title'] }} </h2>
+        {% if loop.index % 2 != 0 %}
         <br>
-        <img src="{{ post['photo'] }}" alt="{{ post['photo_name'] }}" class="img-rounded">
+        <div class="container-fluid">
+            <div class="row">
+              <div class="col-sm-8">
+                <h2>{{ post['title'] }} </h2>
+                <p>{{ post['content'] }}</p>
+                <span class="badge badge-primary">{{ posts['created'] }}</span> 
+                <a href="{{ url_for('edit', id=post['id']) }}">
+                    <span class="btn btn-info">Edit</span>
+                </a>
+              </div>
+              <div class="col-sm-4">
+                <img src="{{ post['photo'] }}" alt="{{ post['photo_name'] }}"  width="350" height="450">
+              </div>
+            </div>
+          </div>
+        {% else%}
         <br>
-        <p>{{ post['content'] }}</p>
-        <!-- <span class="badge badge-primary">{{ posts['created'] }}</span> -->
-        <a href="{{ url_for('edit', id=post['id']) }}">
-            <span class="badge badge-warning">Edit</span>
-        </a>
+        <br>
+        <div class="container-fluid bg-grey">
+            <div class="row">
+              <div class=" col-sm-4">
+                <img src="{{ post['photo'] }}" alt="{{ post['photo_name'] }} " width="350" height="450">
+              </div>
+              <div class="col-sm-8" >
+                <h2>{{ post['title'] }} </h2>
+                <p>{{ post['content'] }}</p>
+                <a href="{{ url_for('edit', id=post['id']) }}">
+                    <span class="btn btn-info">Edit</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        <br>
+        <br>
+        {% endif %} 
     {% endfor %}
 {% endblock %}
